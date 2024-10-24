@@ -42,7 +42,66 @@ type OciCredentials struct {
 }
 
 func (c *OciClient) PushBlob(opts PushBlobOptions) error {
-	// ...
+	var protocol string
+	if opts.Insecure {
+		protocol = "http"
+	} else {
+		protocol = "https"
+	}
+
+	var endpoint string
+	if opts.Tag.Namespace != "" {
+		endpoint = fmt.Sprintf("%s://%s/v2/%s/%s/blobs/uploads/", protocol, &opts.Tag.Host, opts.Tag.Namespace, opts.Tag.Name)
+	} else {
+		endpoint = fmt.Sprintf("%s://%s/v2/%s/blobs/uploads/", protocol, &opts.Tag.Host, opts.Tag.Name)
+	}
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return fmt.Errorf("error creating request: %s", err.Error())
+	}
+
+	if c.Credentials != nil {
+		req.Header.Add("Authorization", c.Credentials.encoded)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %s", err.Error())
+	}
+
+	if resp.StatusCode != 202 {
+		return fmt.Errorf("failed to push blob: %s", resp.Status)
+	}
+
+	location := resp.Header.Get("Location")
+	req, err = http.NewRequest("PUT", location, bytes.NewReader(opts.File))
+	if err != nil {
+		return fmt.Errorf("error uploading blob: %s", err.Error())
+	}
+
+	req.Header.Add("Content-Type", "application/octet-stream")
+	req.Header.Add("Content-Length", fmt.Sprintf("%d", len(opts.File)))
+	query := req.URL.Query()
+	query.Add("digest", opts.Digest.Digest.String())
+	req.URL.RawQuery = query.Encode()
+
+	if c.Credentials != nil {
+		req.Header.Add("Authorization", c.Credentials.encoded)
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 201 {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return fmt.Errorf("unauthorized, please use nori login to authenticate")
+		}
+		return fmt.Errorf("failed to push blob: %s", resp.Status)
+	}
 	return nil
 }
 

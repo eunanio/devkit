@@ -1,4 +1,4 @@
-module github.com/eunanio/devkit
+module github.com/eunanio/sdk
 
 go 1.23.2
 

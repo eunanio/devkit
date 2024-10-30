@@ -1,11 +1,16 @@
 package main
 
 import (
-	"github.com/eunanio/devkit/pkg/log"
-	"github.com/eunanio/devkit/pkg/system"
+	"fmt"
+
+	"github.com/eunanio/sdk/pkg/log"
+	"github.com/eunanio/sdk/pkg/oci"
 )
 
 func main() {
-	err := system.OpenURL("http://google.com")
-	log.NoError(err, "failed to open url")
+	client := oci.NewOciClient()
+	client.SetBasicAuth("username", "password")
+	manifest, err := client.PullManifest(&oci.Tag{Host: "registry.hub.docker.com", Namespace: "library", Name: "nginx", Version: "latest"})
+	log.NoError(err, "failed to push blob")
+	fmt.Println(manifest)
 }

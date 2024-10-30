@@ -128,7 +128,6 @@ func TestCompressDir(t *testing.T) {
 	}
 }
 
-// verifyArchive checks that the tar.gz data contains the same files as the source directory
 func verifyArchive(data []byte, srcDir string) error {
 	gr, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
@@ -149,7 +148,6 @@ func verifyArchive(data []byte, srcDir string) error {
 		filesInArchive[hdr.Name] = true
 	}
 
-	// Walk the source directory and check if all files are in the archive
 	err = filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -158,7 +156,7 @@ func verifyArchive(data []byte, srcDir string) error {
 		if err != nil {
 			return err
 		}
-		// Convert Windows path separators to Unix style for tar archive
+
 		relativePath = filepath.ToSlash(relativePath)
 		if !strings.Contains(relativePath, "/.") && relativePath != "." {
 			if !filesInArchive[relativePath] {
@@ -179,12 +177,11 @@ func TestDecompressDir(t *testing.T) {
 		{
 			name: "Decompress valid archive with files and directories",
 			setup: func() ([]byte, func(), error) {
-				// Create a temporary source directory with files and subdirectories
 				srcDir, err := ioutil.TempDir("", "testsrcdir")
 				if err != nil {
 					return nil, nil, err
 				}
-				// Create files and subdirectories
+
 				subDir := filepath.Join(srcDir, "subdir")
 				if err := os.Mkdir(subDir, 0755); err != nil {
 					return nil, nil, err
@@ -195,12 +192,12 @@ func TestDecompressDir(t *testing.T) {
 				if err := ioutil.WriteFile(filepath.Join(subDir, "file2.txt"), []byte("Hello, Go!"), 0644); err != nil {
 					return nil, nil, err
 				}
-				// Compress the source directory
+
 				data, err := CompressDir(srcDir)
 				if err != nil {
 					return nil, nil, err
 				}
-				// Cleanup function
+
 				cleanup := func() {
 					os.RemoveAll(srcDir)
 				}
@@ -224,7 +221,7 @@ func TestDecompressDir(t *testing.T) {
 		{
 			name: "Decompress invalid archive (corrupted data)",
 			setup: func() ([]byte, func(), error) {
-				// Create invalid tar.gz data
+
 				data := []byte("this is not a valid gzip data")
 				return data, func() {}, nil
 			},
@@ -233,7 +230,7 @@ func TestDecompressDir(t *testing.T) {
 		{
 			name: "Decompress archive with path traversal filenames",
 			setup: func() ([]byte, func(), error) {
-				// Create a tar.gz archive with a file that has a "../" in its name
+
 				var buf bytes.Buffer
 				gw := gzip.NewWriter(&buf)
 				tw := tar.NewWriter(gw)
@@ -311,7 +308,6 @@ func TestDecompressDir(t *testing.T) {
 
 // verifyDecompressedContent checks that the decompressed files match the original archive contents
 func verifyDecompressedContent(data []byte, dstDir string) error {
-	// Read the archive contents
 	var filesInArchive []string
 	gr, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
@@ -331,7 +327,6 @@ func verifyDecompressedContent(data []byte, dstDir string) error {
 		filesInArchive = append(filesInArchive, hdr.Name)
 	}
 
-	// Walk the destination directory and check if all files are extracted
 	err = filepath.Walk(dstDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -340,11 +335,9 @@ func verifyDecompressedContent(data []byte, dstDir string) error {
 		if err != nil {
 			return err
 		}
-		// Ignore the root directory
 		if relativePath == "." {
 			return nil
 		}
-		// Convert Windows path separators to Unix style for comparison
 		relativePath = filepath.ToSlash(relativePath)
 		for _, fileName := range filesInArchive {
 			if fileName == relativePath {

@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/eunanio/devkit/pkg/log"
+	"github.com/eunanio/sdk/pkg/log"
 )
 
 func OpenURL(url string) error {

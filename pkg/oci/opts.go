@@ -51,9 +51,9 @@ func (c *OciClient) PushBlob(opts PushBlobOptions) error {
 
 	var endpoint string
 	if opts.Tag.Namespace != "" {
-		endpoint = fmt.Sprintf("%s://%s/v2/%s/%s/blobs/uploads/", protocol, &opts.Tag.Host, opts.Tag.Namespace, opts.Tag.Name)
+		endpoint = fmt.Sprintf("%s://%s/v2/%s/%s/blobs/uploads/", protocol, opts.Tag.Host, opts.Tag.Namespace, opts.Tag.Name)
 	} else {
-		endpoint = fmt.Sprintf("%s://%s/v2/%s/blobs/uploads/", protocol, &opts.Tag.Host, opts.Tag.Name)
+		endpoint = fmt.Sprintf("%s://%s/v2/%s/blobs/uploads/", protocol, opts.Tag.Host, opts.Tag.Name)
 	}
 
 	req, err := http.NewRequest("GET", endpoint, nil)

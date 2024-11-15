@@ -151,9 +151,9 @@ func (c *OciClient) PullManifest(tag *Tag) (*spec.Manifest, error) {
 	}
 
 	if tag.Namespace != "" {
-		api_endpoint = fmt.Sprintf("https://%s/%s/%s/v2/%s/%s/manifests/%s", tag.Host, tag.Namespace, tag.Name, tag.Version, tag.Name, tag.Version)
+		api_endpoint = fmt.Sprintf("https://%s/v2/%s/%s/manifests/%s", tag.Host, tag.Namespace, tag.Name, tag.Version)
 	} else {
-		api_endpoint = fmt.Sprintf("https://%s/v2/%s/%s/manifests/%s", tag.Host, tag.Name, tag.Version, tag.Name, tag.Version)
+		api_endpoint = fmt.Sprintf("https://%s/v2/%s/manifests/%s", tag.Host, tag.Name, tag.Version)
 	}
 
 	req, err := http.NewRequest("GET", api_endpoint, nil)
